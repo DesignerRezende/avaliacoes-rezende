@@ -61,13 +61,13 @@
             // Verifica se a loja está cadastrada, caso contrário usa Matriz como padrão
             const linkDeAvaliacao = lojas[loja] || lojas["matriz"];
 
-            // URL da API do Google Apps Script (coloque o link correto)
-            const url = "https://script.google.com/macros/s/AKfycbyH-F81MUmz1SkLswWR8BzSB7_S-aGmiw8YVExk8PCIrWBMM4tI5se1SArd52HWNtE/exec";
+            // URL da API do Google Apps Script (substitua pelo seu URL)
+            const url = "https://script.google.com/macros/s/AKfycbzJJX_jazgQuhs_mDCFVpNSLmPdDVg1hsoHj6ZHBIKNGcqz4qEYqZVaKsitBKjovUI/exec";
 
             // Dados a serem enviados para o Google Sheets
             const data = {
-                colaborador: colaborador ? colaborador : "",
-                loja: loja ? loja : "",
+                colaborador: colaborador,
+                loja: loja,
                 link: linkDeAvaliacao
             };
 
@@ -78,13 +78,18 @@
                 body: JSON.stringify(data)
             })
             .then(response => response.text())
-            .then(data => console.log("Resposta da API:", data))
-            .catch(error => console.error("Erro ao enviar dados:", error));
-
-            // Redireciona para a avaliação da loja correta após 1 segundo
-            setTimeout(function() {
+            .then(responseData => {
+                console.log("Resposta da API:", responseData);
+                // Redireciona para a avaliação da loja correta após 1 segundo
+                setTimeout(function() {
+                    window.location.href = linkDeAvaliacao;
+                }, 1000);
+            })
+            .catch(error => {
+                console.error("Erro ao enviar dados:", error);
+                // Em caso de erro, redireciona imediatamente
                 window.location.href = linkDeAvaliacao;
-            }, 1000);
+            });
         }
     </script>
 </head>
