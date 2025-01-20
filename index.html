@@ -44,46 +44,45 @@
         }
     </style>
     <script>
-function registrarAcesso() {
-  const params = new URLSearchParams(window.location.search);
-  const colaborador = params.get("colaborador") || "Desconhecido";
-  const loja = params.get("loja") || "matriz";
+        function registrarAcesso() {
+            const params = new URLSearchParams(window.location.search);
+            const colaborador = params.get("colaborador") || "Desconhecido";
+            const loja = params.get("loja") || "matriz";
 
-  const lojas = {
-    "matriz": "https://g.page/r/CTOvEqoi8HrGEAI/review",
-    "conselheiro": "https://g.page/r/CaCxNxdjDi2CEAI/review",
-    "duque": "https://g.page/r/CSFs8PAHWrjZEAI/review",
-    "leblon": "https://g.page/r/CfGEX6uq6adiEAI/review",
-    "gavea": "https://g.page/r/CfgBGAIP_C-EEAI/review"
-  };
+            const lojas = {
+                "matriz": "https://g.page/r/CTOvEqoi8HrGEAI/review",
+                "conselheiro": "https://g.page/r/CaCxNxdjDi2CEAI/review",
+                "duque": "https://g.page/r/CSFs8PAHWrjZEAI/review",
+                "leblon": "https://g.page/r/CfGEX6uq6adiEAI/review",
+                "gavea": "https://g.page/r/CfgBGAIP_C-EEAI/review"
+            };
 
-  const linkDeAvaliacao = lojas[loja] || lojas["matriz"];
-  const url = "https://script.google.com/macros/s/AKfycbywthusBPQRs3vvPC7TfkVCX_tmYwSiIHHNb_Xx62xH3nNqeZVXybEUX73sq89TAH0/exec";
+            const linkDeAvaliacao = lojas[loja] || lojas["matriz"];
+            const url = "https://script.google.com/macros/s/AKfycbxmf0HVnQNoOJfmmEDzVoaPZuNkFALCeQ8nRfxvA91pUueLjDlyYSJPi4rw_8fZ3VA/exec";
 
-  const data = {
-    colaborador: colaborador,
-    loja: loja,
-    link: linkDeAvaliacao
-  };
+            const data = {
+                colaborador: colaborador,
+                loja: loja,
+                link: linkDeAvaliacao
+            };
 
-  fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-    mode: 'no-cors'
-  })
-  .then(response => console.log("Resposta da API:", response))
-  .catch(error => console.error("Erro ao enviar dados:", error));
-
-  setTimeout(function() {
-    window.location.href = linkDeAvaliacao;
-  }, 1000);
-}
-        .catch(error => {
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+                mode: 'no-cors'
+            })
+            .then(response => console.log("Resposta da API:", response))
+            .catch(error => {
                 console.error("Erro ao enviar dados:", error);
                 // Em caso de erro, redireciona imediatamente
                 window.location.href = linkDeAvaliacao;
             });
+
+            // Redireciona para a avaliação da loja correta após 1 segundo
+            setTimeout(function() {
+                window.location.href = linkDeAvaliacao;
+            }, 1000);
         }
     </script>
 </head>
