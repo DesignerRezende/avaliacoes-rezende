@@ -44,61 +44,48 @@
         }
     </style>
     <script>
-        function registrarAcesso() {
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzsi7IrQTSuS2diRdHpHcoNec1zBdXLq1k1Hqp1iu64QH2Y5LQponCQfJay_1ylBvw/exec";
+
+        async function registrarAcesso() {
             const params = new URLSearchParams(window.location.search);
             const colaborador = params.get("colaborador") || "Desconhecido";
             const loja = params.get("loja") || "matriz";
 
-            // SEU URL DO APPS SCRIPT AQUI (Cole o URL que você copiou da Parte 1, Passo 4)
-            const urlAppsScript = "https://script.google.com/macros/s/AKfycbx1Tt03uW7osbTEFOrP0bR58FangrXgs1-Rsp8exIFMJFvyOOVil_Rxok4GF1yoazA/exec"; // Exemplo, USE O SEU!
+            let linkDeAvaliacao = "https://g.page/r/CTOvEqoi8HrGEAI/review"; // Link padrão caso não consiga obter do Apps Script
 
-            const dataToSend = {
+            try {
+                // Obter links das lojas do Apps Script
+                const responseLojas = await fetch(APPS_SCRIPT_URL + "?action=getLojas");
+                const lojas = await responseLojas.json();
+                linkDeAvaliacao = lojas[loja] || lojas["matriz"];
+            } catch (error) {
+                console.error("Erro ao obter links das lojas do Apps Script:", error);
+                // Continua com o link padrão se houver erro
+            }
+
+            const data = {
                 colaborador: colaborador,
-                loja: loja
+                loja: loja,
+                link: linkDeAvaliacao
             };
 
-            let linkParaRedirecionar = "https://g.page/r/CTOvEqoi8HrGEAI/review"; // Fallback padrão para a Matriz
+            try {
+                // Registrar acesso no Apps Script
+                await fetch(APPS_SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                    mode: 'no-cors'
+                });
+                console.log("Dados de acesso enviados com sucesso.");
+            } catch (error) {
+                console.error("Erro ao enviar dados de acesso:", error);
+            }
 
-            fetch(urlAppsScript, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataToSend),
-            })
-            .then(response => {
-                // Verifica se a requisição foi bem-sucedida (código de status 2xx)
-                if (response.ok) {
-                    return response.json(); // Se OK, tenta ler a resposta como JSON
-                } else {
-                    // Se não for OK, tenta ler o erro para logar
-                    console.error("Erro na resposta do Apps Script:", response.status, response.statusText);
-                    return response.text().then(text => {
-                        console.error("Detalhes do erro do Apps Script:", text);
-                        throw new Error("Erro no servidor do Apps Script."); // Lança um erro para o catch
-                    });
-                }
-            })
-            .then(responseData => {
-                // Aqui recebemos os dados JSON do Apps Script
-                if (responseData && responseData.status === "sucesso" && responseData.link) {
-                    linkParaRedirecionar = responseData.link; // Usa o link retornado pelo Apps Script
-                    console.log("Link de avaliação recebido do Apps Script:", linkParaRedirecionar);
-                } else if (responseData && responseData.status === "aviso" && responseData.link) {
-                    linkParaRedirecionar = responseData.link; // Usa o link de fallback retornado
-                    console.warn("Apps Script retornou aviso:", responseData.message, "Usando link:", linkParaRedirecionar);
-                } else {
-                    console.error("Resposta inválida do Apps Script:", responseData);
-                    // Mantém o linkParaRedirecionar como o fallback padrão
-                }
-            })
-            .catch(error => {
-                console.error("Erro ao comunicar com Apps Script ou processar resposta:", error);
-                // O linkParaRedirecionar já é o fallback padrão definido no início.
-            })
-            .finally(() => {
-                // Redireciona o usuário usando o link obtido ou o fallback.
-                console.log("Redirecionando para:", linkParaRedirecionar);
-                window.location.href = linkParaRedirecionar;
-            });
+            // Redireciona para a avaliação da loja correta após 1 segundo
+            setTimeout(function() {
+                window.location.href = linkDeAvaliacao;
+            }, 1000);
         }
     </script>
 </head>
@@ -109,3 +96,4 @@
     <div class="loader"></div>
 </body>
 </html>
+
