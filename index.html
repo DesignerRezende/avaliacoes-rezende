@@ -48,17 +48,20 @@
             const params = new URLSearchParams(window.location.search);
             const colaborador = params.get("colaborador") || "Desconhecido";
             const loja = params.get("loja") || "matriz";
+            // NOVIDADE: Pega o link de avaliação diretamente da URL.
+            // Isso significa que sua planilha agora define qual link de avaliação será usado.
+            const linkDeAvaliacao = params.get("linkAvaliacao");
 
-            const lojas = {
-                "matriz": "https://g.page/r/CTOvEqoi8HrGEAI/review",
-                "conselheiro": "https://g.page/r/CaCxNxdjDi2CEAI/review",
-                "duque": "https://g.page/r/CSFs8PAHWrjZEAI/review",
-                "leblon": "https://g.page/r/CfGEX6uq6adiEAI/review",
-                "gavea": "https://g.page/r/CfgBGAIP_C-EEAI/review"
-            };
+            // Se por algum motivo o linkAvaliacao não for passado, redireciona para um padrão.
+            // É CRÍTICO que a planilha passe esse parâmetro corretamente agora!
+            if (!linkDeAvaliacao) {
+                console.error("Link de avaliação não encontrado na URL. Redirecionando para padrão.");
+                window.location.href = "https://g.page/r/CTOvEqoi8HrGEAI/review"; // Fallback para a Matriz
+                return; // Para a função aqui
+            }
 
-            const linkDeAvaliacao = lojas[loja] || lojas["matriz"];
-            const url = "https://script.google.com/macros/s/AKfycbxmf0HVnQNoOJfmmEDzVoaPZuNkFALCeQ8nRfxvA91pUueLjDlyYSJPi4rw_8fZ3VA/exec";
+            // SEU URL DO APPS SCRIPT AQUI (Cole o URL que você copiou da Parte 1, Passo 4)
+            const urlAppsScript = "https://script.google.com/macros/s/AKfycbw6afgS2zK0JPOk3-SC4LeJ7S98f5E7rVc35gkPIrZL6XbAVN49zmKqtYX6uXRq9cM/exec"; // Exemplo, USE O SEU!
 
             const data = {
                 colaborador: colaborador,
@@ -66,23 +69,37 @@
                 link: linkDeAvaliacao
             };
 
-            fetch(url, {
+            // Envia os dados para o Apps Script
+            fetch(urlAppsScript, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                // IMPORTANTE: Removemos 'mode: "no-cors"'. Isso permite que o navegador saiba se o Apps Script respondeu com sucesso.
                 body: JSON.stringify(data),
-                mode: 'no-cors'
             })
-            .then(response => console.log("Resposta da API:", response))
+            .then(response => {
+                // Verifica se a requisição foi bem-sucedida (código de status 200-299)
+                if (response.ok) {
+                    console.log("Dados enviados com sucesso para o Apps Script.");
+                } else {
+                    console.error("Erro ao enviar dados para o Apps Script:", response.status, response.statusText);
+                    // Tenta ler a resposta para mais detalhes do erro
+                    return response.text().then(text => {
+                        console.error("Detalhes do erro do Apps Script:", text);
+                    });
+                }
+            })
             .catch(error => {
-                console.error("Erro ao enviar dados:", error);
-                // Em caso de erro, redireciona imediatamente
+                // Captura erros de rede ou outros problemas com o fetch
+                console.error("Erro de rede ao comunicar com Apps Script:", error);
+            })
+            .finally(() => {
+                // MUITO IMPORTANTE: O redirecionamento acontece SEMPRE, depois de tentar enviar os dados.
+                // Isso garante que o usuário não fique preso, mesmo se o registro falhar.
+                // Se você quisesse redirecionar APENAS se o registro for sucesso,
+                // moveria essa linha para dentro do primeiro .then(response => { ... })
+                console.log("Redirecionando para:", linkDeAvaliacao);
                 window.location.href = linkDeAvaliacao;
             });
-
-            // Redireciona para a avaliação da loja correta após 1 segundo
-            setTimeout(function() {
-                window.location.href = linkDeAvaliacao;
-            }, 1000);
         }
     </script>
 </head>
